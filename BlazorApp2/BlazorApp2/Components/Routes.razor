@@ -1,0 +1,25 @@
+﻿@using Microsoft.AspNetCore.Components.WebAssembly.Services;
+@using System.Reflection;
+
+<Router AppAssembly="typeof(Program).Assembly"  OnNavigateAsync="@OnNavigateAsync"
+        AdditionalAssemblies="lazyLoadedAssemblies">
+    <Found Context="routeData">
+        <RouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)" />
+        <FocusOnNavigate RouteData="routeData" Selector="h1" />
+    </Found>
+</Router>
+
+@code {
+
+    private List<Assembly> lazyLoadedAssemblies = new();
+
+    [Inject] private LazyAssemblyLoader AssemblyLoader { get; set; } = default!;
+    private async Task OnNavigateAsync(NavigationContext args)
+    {
+        if (args.Path.Contains("lazyPage", StringComparison.OrdinalIgnoreCase))
+        {
+            var ass = (await AssemblyLoader.LoadAssembliesAsync(new[] { "LazyLibrary.wasm" })).ToList();
+            lazyLoadedAssemblies.AddRange(ass);
+        }
+    }
+}
